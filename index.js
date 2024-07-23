@@ -9,9 +9,8 @@ const { ObjectId } = require("mongodb");
 app.use(cors());
 app.use(express.json());
 
-const path = require("path");
 app.get("/", (req, res) => {
-  res.send("Hello world!");
+  res.send("Hello world Book-project!");
 });
 
 const { MongoClient, ServerApiVersion } = require("mongodb");
@@ -76,13 +75,17 @@ async function run() {
     });
 
     
-    app.get("/all-books", async (req, res) => {
-      let query = {};
-      if (req.query.category) {
-        query = { Category: req.query.category };
+    app.get("/all-books/:category", async (req, res) => {
+      try {
+        const category = req.params.category;
+        const query = { Category: { $regex: new RegExp(`^${category}$`, 'i') } };
+
+        const result = await booksCollections.find(query).toArray();
+        res.send(result);
+      } catch (error) {
+        console.error(error);
+        res.status(500).send({ error: "An error occurred while fetching books by category" });
       }
-      const result = await booksCollections.find(query).toArray();
-      res.send(result);
     });
 
     
